@@ -16,9 +16,9 @@ singer0001.npy~singer0056.npy can be used for test.
 
 - 1 download [Multi-Singer](https://github.com/Multi-Singer/Multi-Singer.github.io) data
     
-    change sample rate of waves to 16000Hz, and put waves to `./data_svc/waves-16k`
+    change sample rate of waves to `16000Hz`, and put waves to `./data_svc/waves-16k`
 
-    change sample rate of waves to 16000Hz, and put waves to `./data_svc/waves-48k`
+    change sample rate of waves to `48000Hz`, and put waves to `./data_svc/waves-48k`
 
     > you can do
 
