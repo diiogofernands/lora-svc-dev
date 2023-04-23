@@ -57,15 +57,15 @@ class Generator(torch.nn.Module):
         # speaker adaper, 256 should change by what speaker encoder you use
         self.adapter = nn.ModuleList()
         # 1024 should change by your whisper out
-        self.cond_pre = nn.Linear(1024, hp.audio.n_mel_channels)
-        self.cond_pos = nn.Embedding(3, hp.audio.n_mel_channels)
+        self.cond_pre = nn.Linear(1024, hp.gen.input_channels)
+        self.cond_pos = nn.Embedding(7, hp.gen.input_channels)
         # pre conv
         self.conv_pre = nn.utils.weight_norm(
-            Conv1d(hp.audio.n_mel_channels, hp.gen.upsample_initial_channel, 7, 1, padding=3))
+            Conv1d(hp.gen.input_channels, hp.gen.upsample_initial_channel, 7, 1, padding=3))
         # nsf
         self.f0_upsamp = torch.nn.Upsample(
             scale_factor=np.prod(hp.gen.upsample_rates))
-        self.m_source = SourceModuleHnNSF()
+        self.m_source = SourceModuleHnNSF(sampling_rate=hp.audio.sampling_rate)
         self.noise_convs = nn.ModuleList()
         # transposed conv-based upsamplers. does not apply anti-aliasing
         self.ups = nn.ModuleList()
@@ -178,3 +178,17 @@ class Generator(torch.nn.Module):
         audio = audio.clamp(min=-MAX_WAV_VALUE, max=MAX_WAV_VALUE-1)
         audio = audio.short()
         return audio
+
+    def pitch2wav(self, f0):
+        MAX_WAV_VALUE = 32768.0
+        # nsf
+        f0 = f0[:, None]
+        f0 = self.f0_upsamp(f0).transpose(1, 2)
+        har_source = self.m_source(f0)
+        audio = har_source.transpose(1, 2)
+        audio = audio.squeeze()  # collapse all dimension except time axis
+        audio = MAX_WAV_VALUE * audio
+        audio = audio.clamp(min=-MAX_WAV_VALUE, max=MAX_WAV_VALUE-1)
+        audio = audio.short()
+        return audio
+

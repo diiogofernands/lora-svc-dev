@@ -6,28 +6,31 @@ maxgan v1 == bigvgan + nsf        PlayVoice/lora-svc
 maxgan v2 == bigvgan + latent f0  PlayVoice/max-svc
 ```
 
+## Download maxgan_pretrain_48K_5L.pth and Test
 
-Uni-SVC for **multi-singer** (release state v0.4): branch https://github.com/PlayVoice/lora-svc/tree/uni-svc-multi-singer, experiment on 56 singers
+> python svc_inference.py --config config/maxgan.yaml --model model_pretrain/maxgan_pretrain_16K_5L.pth --spk config/singers/singer0001.npy --wave test.wav
 
-Uni-SVC for **baker** (release state v0.3): branch https://github.com/PlayVoice/lora-svc/tree/uni-svc-baker, experiment on pure speech
-
-Uni-SVC for **Opencpop** (release state v0.2): branch https://github.com/PlayVoice/lora-svc/tree/uni-svc-opencpop
-
+singer0001.npy~singer0056.npy can be used for test.
 
 ## Train
 
-- 1 download [Multi-Singer](https://github.com/Multi-Singer/Multi-Singer.github.io) data, and change sample rate of waves to 16000Hz, and put waves to **./data_svc/waves**
+- 1 download [Multi-Singer](https://github.com/Multi-Singer/Multi-Singer.github.io) data
+    
+    change sample rate of waves to 16000Hz, and put waves to `./data_svc/waves-16k`
+
+    change sample rate of waves to 16000Hz, and put waves to `./data_svc/waves-48k`
+
     > you can do
 
-- 2 download speaker encoder: [Speaker-Encoder by @mueller91](https://drive.google.com/drive/folders/15oeBYf6Qn1edONkVLXe82MzdIi3O_9m3), and put **best_model.pth** and **condif.json** into **speaker_pretrain/**
+- 2 download speaker encoder: [Speaker-Encoder by @mueller91](https://drive.google.com/drive/folders/15oeBYf6Qn1edONkVLXe82MzdIi3O_9m3), and put `best_model.pth` and `condif.json` into `speaker_pretrain/`
 
-    > python svc_preprocess_speaker.py ./data_svc/waves ./data_svc/speaker
+    > python svc_preprocess_speaker.py ./data_svc/waves-16k ./data_svc/speaker
 
-- 3 download whisper [multiple language medium model](https://openaipublic.azureedge.net/main/whisper/models/345ae4da62f9b3d59415adc60127b97c714f32e89e936602e85993674d08dcb1/medium.pt), and put **medium.pt** into **whisper_pretrain/**
+- 3 download whisper [multiple language medium model](https://openaipublic.azureedge.net/main/whisper/models/345ae4da62f9b3d59415adc60127b97c714f32e89e936602e85993674d08dcb1/medium.pt), and put `medium.pt` into `whisper_pretrain/`
 
-    > python svc_preprocess_ppg.py -w ./data_svc/waves -p ./data_svc/whisper
+    > python svc_preprocess_ppg.py -w ./data_svc/waves-16k -p ./data_svc/whisper
 
-- 4 extract pitch and generate **filelist/train.txt** & filelist/eval.txt
+- 4 extract pitch and generate `filelist/train.txt` & filelist/eval.txt
 
     > python svc_preprocess_f0.py
 
@@ -57,7 +60,16 @@ data tree like this
     │         ├── 000001.spk.npy
     │         ├── 000002.spk.npy
     │         └── 000003.spk.npy 
-    └── waves
+    └── waves-16k
+    │     ├── spk1
+    │     │   ├── 000001.wav
+    │     │   ├── 000002.wav
+    │     │   └── 000003.wav
+    │     └── spk2
+    │         ├── 000001.wav
+    │         ├── 000002.wav
+    │         └── 000003.wav
+    └── waves-48k
     │     ├── spk1
     │     │   ├── 000001.wav
     │     │   ├── 000002.wav
@@ -90,13 +102,23 @@ last step has denoise code and loss: 60K~120K
 > loss_g = score_loss + stft_loss
 
 ## Infer
-export clean model
+- 1 Export clean model
 
-> python svc_inference_export.py --config config/maxgan.yaml --checkpoint_path maxgan_pretrain.pth
+    > python svc_export.py --config config/maxgan.yaml --checkpoint_path chkpt/svc/***.pt
 
-you can download model for release page, after model release
+    you can download model for release page
 
-> python svc_inference.py --config config/maxgan.yaml --model maxgan_g.pth --spk ./config/singers/singer0001.npy --wave test.wav
+- 2 Use whisper to extract content encoding; One-key reasoning is not used, in order to reduce the occupation of memory.
+
+    > python svc_inference_ppg.py -w test.wav -p test.ppg.npy
+
+    out file is test.ppg.npy；If the ppg file is not specified in the next step, the next step will automatically generate it.
+
+- 3 Specify parameters and inference
+
+    > python svc_inference.py --config config/maxgan.yaml --model maxgan_g.pth --spk ./config/singers/singer0001.npy --wave test.wav
+
+    The generated file is in the current directory svc_out.wav; at the same time, svc_out_pitch.wav is generated to visually display the pitch extraction results.
 
 ## Reference
 [AdaSpeech: Adaptive Text to Speech for Custom Voice](https://arxiv.org/pdf/2103.00993.pdf)
@@ -113,35 +135,33 @@ https://github.com/chenwj1989/pafx
 
 ## Data-sets
 
-KiSing      http://shijt.site/index.php/2021/05/16/kising-the-first-open-source-mandarin-singing-voice-synthesis-corpus/
+KiSing        http://shijt.site/index.php/2021/05/16/kising-the-first-open-source-mandarin-singing-voice-synthesis-corpus/
 
-PopCS 		  https://github.com/MoonInTheRiver/DiffSinger/blob/master/resources/apply_form.md
+PopCS         https://github.com/MoonInTheRiver/DiffSinger/blob/master/resources/apply_form.md
 
-opencpop 	  https://wenet.org.cn/opencpop/download/
+opencpop      https://wenet.org.cn/opencpop/download/
 
-Multi-Singer 	https://github.com/Multi-Singer/Multi-Singer.github.io
+Multi-Singer  https://github.com/Multi-Singer/Multi-Singer.github.io
 
-M4Singer	  https://github.com/M4Singer/M4Singer/blob/master/apply_form.md
+M4Singer      https://github.com/M4Singer/M4Singer/blob/master/apply_form.md
 
-CSD 		    https://zenodo.org/record/4785016#.YxqrTbaOMU4
+CSD           https://zenodo.org/record/4785016#.YxqrTbaOMU4
 
-KSS		      https://www.kaggle.com/datasets/bryanpark/korean-single-speaker-speech-dataset
+KSS           https://www.kaggle.com/datasets/bryanpark/korean-single-speaker-speech-dataset
 
-JVS MuSic	  https://sites.google.com/site/shinnosuketakamichi/research-topics/jvs_music
+JVS MuSic     https://sites.google.com/site/shinnosuketakamichi/research-topics/jvs_music
 
-PJS		      https://sites.google.com/site/shinnosuketakamichi/research-topics/pjs_corpus
+PJS           https://sites.google.com/site/shinnosuketakamichi/research-topics/pjs_corpus
 
-JUST Song	  https://sites.google.com/site/shinnosuketakamichi/publication/jsut-song
+JUST Song     https://sites.google.com/site/shinnosuketakamichi/publication/jsut-song
 
+MUSDB18       https://sigsep.github.io/datasets/musdb.html#musdb18-compressed-stems
 
-MUSDB18		  https://sigsep.github.io/datasets/musdb.html#musdb18-compressed-stems
+DSD100        https://sigsep.github.io/datasets/dsd100.html
 
-DSD100 		  https://sigsep.github.io/datasets/dsd100.html
+Aishell-3     http://www.aishelltech.com/aishell_3
 
-
-Aishell-3 	http://www.aishelltech.com/aishell_3
-
-VCTK 		    https://datashare.ed.ac.uk/handle/10283/2651
+VCTK          https://datashare.ed.ac.uk/handle/10283/2651
 
 # Notice
 If you adopt the code or idea of this project, please list it in your project, which is the basic criterion for the continuation of the open source spirit.

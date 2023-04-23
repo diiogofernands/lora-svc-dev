@@ -20,6 +20,24 @@ from model.discriminator import Discriminator
 from .validation import validate
 
 
+def load_pretrain_16k(saved_state_dict, model):
+    if hasattr(model, 'module'):
+        state_dict = model.module.state_dict()
+    else:
+        state_dict = model.state_dict()
+    new_state_dict = {}
+    for k, v in state_dict.items():
+        if k.startswith('cond_pos'):
+            new_state_dict[k] = v
+        else:
+            new_state_dict[k] = saved_state_dict[k]
+    if hasattr(model, 'module'):
+        model.module.load_state_dict(new_state_dict)
+    else:
+        model.load_state_dict(new_state_dict)
+    return model
+
+
 def train(rank, args, chkpt_path, hp, hp_str):
 
     if args.num_gpus > 1:
@@ -68,6 +86,13 @@ def train(rank, args, chkpt_path, hp, hp_str):
         writer = MyWriter(hp, log_dir)
         valloader = create_dataloader(hp, False)
 
+    if os.path.isfile(hp.train.pretrain_16k):
+        if rank == 0:
+            logger.info("Start from 16k pretrain model: %s" % hp.train.pretrain_16k)
+        checkpoint = torch.load(hp.train.pretrain_16k, map_location='cpu')
+        load_pretrain_16k(checkpoint['model_g'], model_g)
+        model_d.load_state_dict(checkpoint['model_d'])
+
     if chkpt_path is not None:
         if rank == 0:
             logger.info("Resuming from checkpoint: %s" % chkpt_path)
@@ -103,7 +128,7 @@ def train(rank, args, chkpt_path, hp, hp_str):
     stft_criterion = MultiResolutionSTFTLoss(device, resolutions)
 
     for epoch in itertools.count(init_epoch+1):
-        
+
         if rank == 0 and epoch % hp.log.validation_interval == 0:
             with torch.no_grad():
                 validate(hp, args, model_g, model_d, valloader, stft, writer, step, device)
@@ -177,6 +202,10 @@ def train(rank, args, chkpt_path, hp, hp_str):
                 writer.log_training(loss_g, loss_d, loss_m, loss_s, score_loss.item(), step)
                 # loader.set_description("g %.04f m %.04f s %.04f d %.04f | step %d" % (loss_g, loss_m, loss_s, loss_d, step))
                 logger.info("g %.04f m %.04f s %.04f d %.04f | step %d" % (loss_g, loss_m, loss_s, loss_d, step))
+
+            if rank == 0 and step % 1000 == 0:
+                with torch.no_grad():
+                    validate(hp, args, model_g, model_d, valloader, stft, writer, step, device)
 
         if rank == 0 and epoch % hp.log.save_interval == 0:
             save_path = os.path.join(pt_dir, '%s_%04d.pt'

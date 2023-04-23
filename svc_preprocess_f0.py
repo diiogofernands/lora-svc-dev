@@ -25,7 +25,7 @@ if __name__ == "__main__":
     os.makedirs("./filelists/", exist_ok=True)
     files = open("./filelists/train.txt", "w", encoding="utf-8")
 
-    rootPath = "./data_svc/waves/"
+    rootPath = "./data_svc/waves-16k/"
     outPath = "./data_svc/pitch/"
     os.makedirs(outPath, exist_ok=True)
 
@@ -46,8 +46,8 @@ if __name__ == "__main__":
                     )
 
                     path_spk = f"./data_svc/speaker/{spks}/{file}.spk.npy"
-                    path_wave = f"./data_svc/waves/{spks}/{file}.wav"
-                    path_pitch = f"./data_svc/pitch/{spks}/{file}.nsf.npy"
+                    path_wave = f"./data_svc/waves-48k/{spks}/{file}.wav"
+                    path_pitch = f"./data_svc/pitch/{spks}/{file}.pit.npy"
                     path_whisper = f"./data_svc/whisper/{spks}/{file}.ppg.npy"
                     print(
                         f"{path_wave}|{path_pitch}|{path_whisper}|{path_spk}",
