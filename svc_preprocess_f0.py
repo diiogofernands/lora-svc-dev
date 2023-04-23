@@ -40,7 +40,7 @@ if __name__ == "__main__":
                     featur_pit = compute_f0(wav_path)
 
                     np.save(
-                        f"{outPath}/{spks}/{file}.nsf",
+                        f"{outPath}/{spks}/{file}.pit",
                         featur_pit,
                         allow_pickle=False,
                     )
