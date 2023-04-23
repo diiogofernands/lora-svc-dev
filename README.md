@@ -8,7 +8,7 @@ maxgan v2 == bigvgan + latent f0  PlayVoice/max-svc
 
 ## Download maxgan_pretrain_48K_5L.pth and Test
 
-> python svc_inference.py --config config/maxgan.yaml --model model_pretrain/maxgan_pretrain_16K_5L.pth --spk config/singers/singer0001.npy --wave test.wav
+> python svc_inference.py --config config/maxgan.yaml --model model_pretrain/maxgan_pretrain_48K_5L.pth --spk config/singers/singer0001.npy --wave test.wav
 
 singer0001.npy~singer0056.npy can be used for test.
 
