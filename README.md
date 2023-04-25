@@ -103,6 +103,10 @@ data tree like this
 ![image](https://user-images.githubusercontent.com/16432329/230908037-127becb9-ed2a-41b5-8ac6-c9791ec2f7c7.png)
 
 ## Infer
+- 0 set work path
+
+    > export PYTHONPATH=$PWD
+
 - 1 Export clean model
 
     > python svc_export.py --config config/maxgan.yaml --checkpoint_path chkpt/svc/***.pt
