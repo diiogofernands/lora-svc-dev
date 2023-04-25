@@ -13,28 +13,41 @@ maxgan v2 == bigvgan + latent f0  PlayVoice/max-svc
 singer0001.npy~singer0056.npy can be used for test.
 
 ## Train
+- 0 set work path
+
+    > export PYTHONPATH=$PWD
 
 - 1 download [Multi-Singer](https://github.com/Multi-Singer/Multi-Singer.github.io) data
-    
+
     change sample rate of waves to `16000Hz`, and put waves to `./data_svc/waves-16k`
+
+    > python prepare/preprocess_a.py -w ./data_raw -o ./data_svc/waves-16k -s 16000
 
     change sample rate of waves to `48000Hz`, and put waves to `./data_svc/waves-48k`
 
-    > you can do
+    > python prepare/preprocess_a.py -w ./data_raw -o ./data_svc/waves-48k -s 48000
 
-- 2 download speaker encoder: [Speaker-Encoder by @mueller91](https://drive.google.com/drive/folders/15oeBYf6Qn1edONkVLXe82MzdIi3O_9m3), and put `best_model.pth` and `condif.json` into `speaker_pretrain/`
+- 2 extract pitch: 
 
-    > python svc_preprocess_speaker.py ./data_svc/waves-16k ./data_svc/speaker
+    > python prepare/preprocess_f0.py -w data_svc/waves-16k -p data_svc/pitch
 
 - 3 download whisper [multiple language medium model](https://openaipublic.azureedge.net/main/whisper/models/345ae4da62f9b3d59415adc60127b97c714f32e89e936602e85993674d08dcb1/medium.pt), and put `medium.pt` into `whisper_pretrain/`
 
-    > python svc_preprocess_ppg.py -w ./data_svc/waves-16k -p ./data_svc/whisper
+    > python prepare/preprocess_ppg.py -w data_svc/waves-16k -p data_svc/whisper
 
-- 4 extract pitch and generate `filelist/train.txt` & filelist/eval.txt
+- 4 download speaker encoder: [Speaker-Encoder by @mueller91](https://drive.google.com/drive/folders/15oeBYf6Qn1edONkVLXe82MzdIi3O_9m3), and put `best_model.pth.tar` and `condif.json` into `speaker_pretrain/`
 
-    > python svc_preprocess_f0.py
+    > python prepare/preprocess_speaker.py ./data_svc/waves-16k ./data_svc/speaker
 
-- 5 start train
+- 5 generate `filelist/train.txt` & `filelist/valid.txt`
+
+    > python prepare/preprocess_train.py
+
+- 6 debug data loader
+
+    > python prepare/preprocess_zzz.py -c config/maxgan.yaml
+
+- 7 start train
 
     > python svc_trainer.py -c config/maxgan.yaml -n svc
 
@@ -89,18 +102,6 @@ data tree like this
               └── 000003.ppg.npy
 ![image](https://user-images.githubusercontent.com/16432329/230908037-127becb9-ed2a-41b5-8ac6-c9791ec2f7c7.png)
 
-## Fast and Last
-
-fast step has loss: 0~60K
-
-> loss_g = score_loss + stft_loss + mel_loss
-
-last step has denoise code and loss: 60K~120K
-
-> x = x + torch.randn_like(x)
-
-> loss_g = score_loss + stft_loss
-
 ## Infer
 - 1 Export clean model
 
@@ -110,7 +111,7 @@ last step has denoise code and loss: 60K~120K
 
 - 2 Use whisper to extract content encoding; One-key reasoning is not used, in order to reduce the occupation of memory.
 
-    > python svc_inference_ppg.py -w test.wav -p test.ppg.npy
+    > python whisper/inference.py -w test.wav -p test.ppg.npy
 
     out file is test.ppg.npy；If the ppg file is not specified in the next step, the next step will automatically generate it.
 

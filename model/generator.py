@@ -58,7 +58,7 @@ class Generator(torch.nn.Module):
         self.adapter = nn.ModuleList()
         # 1024 should change by your whisper out
         self.cond_pre = nn.Linear(1024, hp.gen.input_channels)
-        self.cond_pos = nn.Embedding(7, hp.gen.input_channels)
+        self.cond_pos = nn.Embedding(3, hp.gen.input_channels)
         # pre conv
         self.conv_pre = nn.utils.weight_norm(
             Conv1d(hp.gen.input_channels, hp.gen.upsample_initial_channel, 7, 1, padding=3))
@@ -124,7 +124,7 @@ class Generator(torch.nn.Module):
         har_source = self.m_source(f0)
         har_source = har_source.transpose(1, 2)
         # pre conv
-        # x = x + torch.randn_like(x)       # for last train
+        x = x + torch.randn_like(x)         # Perturbation
         x = self.cond_pre(x)                # [B, L, D]
         p = self.cond_pos(pos)
         x = x + p

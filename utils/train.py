@@ -20,24 +20,6 @@ from model.discriminator import Discriminator
 from .validation import validate
 
 
-def load_pretrain_16k(saved_state_dict, model):
-    if hasattr(model, 'module'):
-        state_dict = model.module.state_dict()
-    else:
-        state_dict = model.state_dict()
-    new_state_dict = {}
-    for k, v in state_dict.items():
-        if k.startswith('cond_pos'):
-            new_state_dict[k] = v
-        else:
-            new_state_dict[k] = saved_state_dict[k]
-    if hasattr(model, 'module'):
-        model.module.load_state_dict(new_state_dict)
-    else:
-        model.load_state_dict(new_state_dict)
-    return model
-
-
 def train(rank, args, chkpt_path, hp, hp_str):
 
     if args.num_gpus > 1:
@@ -69,9 +51,9 @@ def train(rank, args, chkpt_path, hp, hp_str):
                         device=device)
     # define logger, writer, valloader, stft at rank_zero
     if rank == 0:
-        pt_dir = os.path.join(hp.log.chkpt_dir, args.name)
+        pth_dir = os.path.join(hp.log.pth_dir, args.name)
         log_dir = os.path.join(hp.log.log_dir, args.name)
-        os.makedirs(pt_dir, exist_ok=True)
+        os.makedirs(pth_dir, exist_ok=True)
         os.makedirs(log_dir, exist_ok=True)
 
         logging.basicConfig(
@@ -85,13 +67,6 @@ def train(rank, args, chkpt_path, hp, hp_str):
         logger = logging.getLogger()
         writer = MyWriter(hp, log_dir)
         valloader = create_dataloader(hp, False)
-
-    if os.path.isfile(hp.train.pretrain_16k):
-        if rank == 0:
-            logger.info("Start from 16k pretrain model: %s" % hp.train.pretrain_16k)
-        checkpoint = torch.load(hp.train.pretrain_16k, map_location='cpu')
-        load_pretrain_16k(checkpoint['model_g'], model_g)
-        model_d.load_state_dict(checkpoint['model_d'])
 
     if chkpt_path is not None:
         if rank == 0:
@@ -129,10 +104,6 @@ def train(rank, args, chkpt_path, hp, hp_str):
 
     for epoch in itertools.count(init_epoch+1):
 
-        if rank == 0 and epoch % hp.log.validation_interval == 0:
-            with torch.no_grad():
-                validate(hp, args, model_g, model_d, valloader, stft, writer, step, device)
-
         if rank == 0:
             loader = tqdm.tqdm(trainloader, desc='Loading train data')
         else:
@@ -167,11 +138,8 @@ def train(rank, args, chkpt_path, hp, hp_str):
 
             score_loss = score_loss / len(res_fake + period_fake)
 
-            # for fast train
+            # Full Loss
             loss_g = score_loss + stft_loss + mel_loss
-            # for last train
-            # loss_g = score_loss + stft_loss
-
             loss_g.backward()
             optim_g.step()
 
@@ -198,25 +166,24 @@ def train(rank, args, chkpt_path, hp, hp_str):
             loss_s = stft_loss.item()
             loss_m = mel_loss.item()
 
-            if rank == 0 and step % hp.log.summary_interval == 0:
+            if rank == 0 and step % hp.log.info_interval == 0:
                 writer.log_training(loss_g, loss_d, loss_m, loss_s, score_loss.item(), step)
-                # loader.set_description("g %.04f m %.04f s %.04f d %.04f | step %d" % (loss_g, loss_m, loss_s, loss_d, step))
                 logger.info("g %.04f m %.04f s %.04f d %.04f | step %d" % (loss_g, loss_m, loss_s, loss_d, step))
 
-            if rank == 0 and step % 1000 == 0:
+            if rank == 0 and step % hp.log.eval_interval == 0:
                 with torch.no_grad():
                     validate(hp, args, model_g, model_d, valloader, stft, writer, step, device)
 
-        if rank == 0 and epoch % hp.log.save_interval == 0:
-            save_path = os.path.join(pt_dir, '%s_%04d.pt'
-                                     % (args.name, epoch))
-            torch.save({
-                'model_g': (model_g.module if args.num_gpus > 1 else model_g).state_dict(),
-                'model_d': (model_d.module if args.num_gpus > 1 else model_d).state_dict(),
-                'optim_g': optim_g.state_dict(),
-                'optim_d': optim_d.state_dict(),
-                'step': step,
-                'epoch': epoch,
-                'hp_str': hp_str,
-            }, save_path)
-            logger.info("Saved checkpoint to: %s" % save_path)
+            if rank == 0 and step % hp.log.save_interval == 0:
+                save_path = os.path.join(pth_dir, '%s_%08d.pt'
+                                         % (args.name, step))
+                torch.save({
+                    'model_g': (model_g.module if args.num_gpus > 1 else model_g).state_dict(),
+                    'model_d': (model_d.module if args.num_gpus > 1 else model_d).state_dict(),
+                    'optim_g': optim_g.state_dict(),
+                    'optim_d': optim_d.state_dict(),
+                    'step': step,
+                    'epoch': epoch,
+                    'hp_str': hp_str,
+                }, save_path)
+                logger.info("Saved checkpoint to: %s" % save_path)

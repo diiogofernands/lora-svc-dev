@@ -58,8 +58,8 @@ def main(args):
     if (args.ppg == None):
         args.ppg = "svc_tmp.ppg.npy"
         print(
-            f"Auto run : python svc_inference_ppg.py -w {args.wave} -p {args.ppg}")
-    os.system(f"python svc_inference_ppg.py -w {args.wave} -p {args.ppg}")
+            f"Auto run : python whisper/inference.py -w {args.wave} -p {args.ppg}")
+        os.system(f"python whisper/inference.py -w {args.wave} -p {args.ppg}")
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     hp = OmegaConf.load(args.config)
@@ -72,13 +72,12 @@ def main(args):
     spk = torch.FloatTensor(spk)
 
     ppg = np.load(args.ppg)
-    pos = [1, 2, 3, 4, 5, 6]
+    pos = [1, 2]
     pos = np.tile(pos, ppg.shape[0])
-    ppg = np.repeat(ppg, 6, 0)  # 20ms:16k:320 -> 20ms:48k:960 960/160=6
+    ppg = np.repeat(ppg, 2, 0)  # 320 PPG -> 160 * 2
     ppg = torch.FloatTensor(ppg)
 
     pit = compute_f0_nn(args.wave, device)
-    pit = np.repeat(pit, 3, 0) # 10ms:16k:160 -> 10ms:48k:480 480/160=3
     if (args.statics == None):
         print("don't use pitch shift")
     else:

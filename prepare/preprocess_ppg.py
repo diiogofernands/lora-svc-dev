@@ -37,8 +37,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     print(args.wav)
     print(args.ppg)
-    if not os.path.exists(args.ppg):
-        os.makedirs(args.ppg)
+    os.makedirs(args.ppg)
     wavPath = args.wav
     ppgPath = args.ppg
 
