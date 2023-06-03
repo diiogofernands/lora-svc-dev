@@ -32,10 +32,12 @@ def validate(hp, args, generator, discriminator, valloader, stft, writer, step, 
             fake_audio = fake_audio[0][0].cpu().detach().numpy()
             spec_fake = spec_fake[0].cpu().detach().numpy()
             spec_real = spec_real[0].cpu().detach().numpy()
-            writer.log_fig_audio(audio, fake_audio, spec_fake, spec_real, idx, step)
+#             writer.log_fig_audio(audio, fake_audio, spec_fake, spec_real, idx, step)
 
     mel_loss = mel_loss / len(valloader.dataset)
 
-    writer.log_validation(mel_loss, generator, discriminator, step)
+#     writer.log_validation(mel_loss, generator, discriminator, step)
+    #fix2wb
+    writer.log('validation/mel_loss', mel_loss, step)
 
     torch.backends.cudnn.benchmark = True
