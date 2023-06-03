@@ -1,11 +1,4 @@
 # singing voice conversion based on whisper & maxgan
-[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/17PK5Vd-oyoxpsZ8nENktFcPZEwZmPrTb?usp=sharing)
-<img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/PlayVoice/lora-svc">
-<img alt="GitHub forks" src="https://img.shields.io/github/forks/PlayVoice/lora-svc">
-<img alt="GitHub issues" src="https://img.shields.io/github/issues/PlayVoice/lora-svc">
-<img alt="GitHub" src="https://img.shields.io/github/license/PlayVoice/lora-svc">
-
-[【中文说明】](README_zh_CN.md)[【48K模型重构完成，训练中~】](https://github.com/PlayVoice/lora-svc/tree/lora-svc-for-pretrain-48k)
 
 ```
 Black technology based on the three giants of artificial intelligence:
@@ -16,21 +9,16 @@ Nvidia's bigvgan, anti-aliasing for speech generation
 
 Microsoft's adapter, high-efficiency for fine-tuning
 ```
-Open source plug-in singing voice library model, based on the LoRA principle:
-
-<p align="center">
-  <img src="https://user-images.githubusercontent.com/16432329/225337790-392b958a-67ec-4643-b26a-018ee8e4cf56.jpg" />
-</p>
 
 Train the model from scratch based on a large amount of data, using the branch: [lora-svc-for-pretrain](https://github.com/PlayVoice/lora-svc/tree/lora-svc-for-pretrain)
-
-https://user-images.githubusercontent.com/16432329/231021007-6e34cbb4-e256-491d-8ab6-5ce4e822da21.mp4
-
-The following is the customization process base on pre-trained model.
 
 ## Train
 
 - 1 Data preparation: place the original audio data in the `./data_svc/waves-raw` directory.
+
+    cut audio, more than 5s and less than 30s
+
+    > python remove_long_audios.py -w data_raw 
 
     convert the sampling rate to `16000Hz`
 
@@ -62,19 +50,17 @@ The following is the customization process base on pre-trained model.
 
     Generate two files, lora_speaker.npy and lora_pitch_statics.npy
 
-- 6 Download the pre-training model [maxgan_pretrain_48K_5L.pth](https://github.com/PlayVoice/lora-svc/releases/tag/v0.5.5) from the release page and put it in the `model_pretrain` folder. The pre-training model contains the generator and the discriminator
+- 6 Put the pre-training model in the `model_pretrain` folder. The pre-training model contains the generator and the discriminator
 
-    https://github.com/PlayVoice/lora-svc/blob/ebf227950d8d84351497e02fad978b71676f15a9/config/maxgan.yaml#L17
-
-    > python svc_trainer.py -c config/maxgan.yaml -n lora
-    
     Resume training
+
+<!--     > python svc_trainer.py -c config/maxgan.yaml -n lora -->
     
     > python svc_trainer.py -c config/maxgan.yaml -n lora -p chkpt/lora/***.pth
     
-    Check state
+<!--     Check state
     
-    > tensorboard --logdir logs/
+    > tensorboard --logdir logs/ -->
 
 
 Your file directory should look like this~~~
@@ -106,23 +92,7 @@ Your file directory should look like this~~~
           ├── 000002.ppg.npy
           └── 000003.ppg.npy
 
-## Train LoRA
 
-https://github.com/PlayVoice/lora-svc/blob/ebf227950d8d84351497e02fad978b71676f15a9/config/maxgan.yaml#L16
-
-
-https://github.com/PlayVoice/lora-svc/blob/ebf227950d8d84351497e02fad978b71676f15a9/utils/train.py#L34-L35
-
-How to use
-
-- Use for extremely low resources to prevent overfitting
-
-- Use for plug-in sound library development
-
-- Do not use for other
-
-## egs: log of using 50 sentences and training for ten minutes
-https://user-images.githubusercontent.com/16432329/228889388-d7658930-6187-48a8-af37-74096d41c018.mp4
 
 ## Inference
 - 1 Export the generator, the discriminator will only be used in training
@@ -174,7 +144,7 @@ Copy the svc_out_48k.wav generated after frequency expansion to path\to\input\wa
 
 Generate enhanced files in path\to\output\wavs
 
-## Source of code and References
+<!-- ## Source of code and References
 [Adapter-Based Extension of Multi-Speaker Text-to-Speech Model for New Speakers](https://arxiv.org/abs/2211.00585)
 
 [AdaSpeech: Adaptive Text to Speech for Custom Voice](https://arxiv.org/pdf/2103.00993.pdf)
@@ -204,4 +174,4 @@ If you adopt the code or idea of this project, please list it in your project, w
 
 如果你采用了本项目的代码或创意，请在你的项目中列出，这是开源精神得以延续的基本准则。
 
-このプロジェクトのコードやアイデアを採用した場合は、オープンソースの精神が続く基本的なガイドラインであるプロジェクトにリストしてください。
+このプロジェクトのコードやアイデアを採用した場合は、オープンソースの精神が続く基本的なガイドラインであるプロジェクトにリストしてください。 -->
