@@ -10,7 +10,7 @@ from torch.distributed import init_process_group
 from torch.nn.parallel import DistributedDataParallel
 import itertools
 import traceback
-import wandb
+import writer
 
 from utils.dataloader import create_dataloader
 from utils.writer import MyWriter
@@ -19,7 +19,6 @@ from utils.stft_loss import MultiResolutionSTFTLoss
 from model.generator import Generator
 from model.discriminator import Discriminator
 from .validation import validate
-
 
 def train(rank, args, chkpt_path, hp, hp_str):
 
@@ -68,7 +67,8 @@ def train(rank, args, chkpt_path, hp, hp_str):
             ]
         )
         logger = logging.getLogger()
-        writer = MyWriter(hp, log_dir)
+        #writer = MyWriter(hp, log_dir)
+        writer = wandb.init(project="lora-svc",entity="ceia-moises")
         valloader = create_dataloader(hp, False)
     
     if os.path.isfile(hp.train.pretrain):
@@ -183,11 +183,11 @@ def train(rank, args, chkpt_path, hp, hp_str):
             if rank == 0 and step % hp.log.summary_interval == 0:
                 #writer.log_training(loss_g, loss_d, loss_m, loss_s, score_loss.item(), step)
                 #fix2wb
-                wandb.log('train/g_loss', loss_g, step)
-                wandb.log('train/d_loss', loss_d, step)
-                wandb.log('train/score_loss', score_loss.item(), step)
-                wandb.log('train/stft_loss', loss_s, step)
-                wandb.log('train/mel_loss', loss_m, step)
+                writer.log('train/g_loss', loss_g, step)
+                writer.log('train/d_loss', loss_d, step)
+                writer.log('train/score_loss', score_loss.item(), step)
+                writer.log('train/stft_loss', loss_s, step)
+                writer.log('train/mel_loss', loss_m, step)
                 
                 # loader.set_description("g %.04f m %.04f s %.04f d %.04f | step %d" % (loss_g, loss_m, loss_s, loss_d, step))
                 logger.info("g %.04f m %.04f s %.04f d %.04f | step %d" % (loss_g, loss_m, loss_s, loss_d, step))
