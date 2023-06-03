@@ -3,6 +3,8 @@ import numpy as np
 import argparse
 import torch
 
+import multiprocessing
+
 from whisper.model import Whisper, ModelDimensions
 from whisper.audio import load_audio, pad_or_trim, log_mel_spectrogram
 
@@ -16,7 +18,7 @@ def load_model(path) -> Whisper:
     return model.to(device)
 
 
-def pred_ppg(whisper: Whisper, wavPath, ppgPath):
+def pred_ppg(whisper: whisper, wavPath, ppgPath):
     audio = load_audio(wavPath)
     audln = audio.shape[0]
     ppgln = audln // 320
@@ -43,6 +45,7 @@ if __name__ == "__main__":
 
     whisper = load_model(os.path.join("whisper_pretrain", "medium.pt"))
 
+    paths = list()
     for spks in os.listdir(wavPath):
         if os.path.isdir(f"./{wavPath}/{spks}"):
             os.makedirs(f"./{ppgPath}/{spks}")
@@ -51,10 +54,20 @@ if __name__ == "__main__":
                 if file.endswith(".wav"):
                     # print(file)
                     file = file[:-4]
-                    pred_ppg(whisper, f"{wavPath}/{spks}/{file}.wav", f"{ppgPath}/{spks}/{file}.ppg")
+                    path = list()
+                    path.append(f"{wavPath}/{spks}/{file}.wav")
+                    path.append(f"{ppgPath}/{spks}/{file}.ppg")
+                    #pred_ppg(whisper, f"{wavPath}/{spks}/{file}.wav", f"{ppgPath}/{spks}/{file}.ppg")
         else:
             file = spks
             if file.endswith(".wav"):
                 # print(file)
                 file = file[:-4]
-                pred_ppg(whisper, f"{wavPath}/{file}.wav", f"{ppgPath}/{file}.ppg")
+                path = list()
+                path.append(f"{wavPath}/{file}.wav")
+                path.append(f"{ppgPath}/{file}.ppg")
+                #pred_ppg(whisper, f"{wavPath}/{file}.wav", f"{ppgPath}/{file}.ppg")
+    
+    pool_obj = multiprocessing.Pool()
+    ans = pool_obj.map(pred_ppg, paths)
+    pool_obj.close()
