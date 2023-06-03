@@ -59,8 +59,8 @@ if __name__ == "__main__":
                 # print(file)
                 file = file[:-4]
                 path = list()
-                path.append(f"{wavPath}/{spks}/{file}.wav")
-                path.append(f"{pitPath}/{spks}/{file}.pit")
+                path.append(f"{wavPath}/{file}.wav")
+                path.append(f"{pitPath}/{file}.pit")
                 paths.append(path)
                 #compute_f0(f"{wavPath}/{file}.wav", f"{pitPath}/{file}.pit")
                 
