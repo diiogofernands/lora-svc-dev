@@ -51,7 +51,6 @@ if __name__ == "__main__":
                     path = list()
                     path.append(f"{wavPath}/{spks}/{file}.wav")
                     path.append(f"{pitPath}/{spks}/{file}.pit")
-                    paths.append(path)
                     #compute_f0(f"{wavPath}/{spks}/{file}.wav", f"{pitPath}/{spks}/{file}.pit")
         else:
             file = spks
@@ -61,8 +60,8 @@ if __name__ == "__main__":
                 path = list()
                 path.append(f"{wavPath}/{file}.wav")
                 path.append(f"{pitPath}/{file}.pit")
-                paths.append(path)
                 #compute_f0(f"{wavPath}/{file}.wav", f"{pitPath}/{file}.pit")
+        paths.append(path)
                 
     pool_obj = multiprocessing.Pool()
     ans = pool_obj.map(compute_f0, paths)
