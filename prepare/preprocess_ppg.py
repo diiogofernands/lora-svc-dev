@@ -18,7 +18,8 @@ def load_model(path) -> Whisper:
     return model.to(device)
 
 
-def pred_ppg(whisper: whisper, wavPath, ppgPath):
+def pred_ppg(paths):
+    wavPath, ppgPath = paths[0], paths[1]
     audio = load_audio(wavPath)
     audln = audio.shape[0]
     ppgln = audln // 320
@@ -67,6 +68,7 @@ if __name__ == "__main__":
                 path.append(f"{wavPath}/{file}.wav")
                 path.append(f"{ppgPath}/{file}.ppg")
                 #pred_ppg(whisper, f"{wavPath}/{file}.wav", f"{ppgPath}/{file}.ppg")
+        paths.append(path)
     
     pool_obj = multiprocessing.Pool()
     ans = pool_obj.map(pred_ppg, paths)
