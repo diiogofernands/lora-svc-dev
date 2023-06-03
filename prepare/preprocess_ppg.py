@@ -20,16 +20,20 @@ def load_model(path) -> Whisper:
 
 def pred_ppg(paths):
     wavPath, ppgPath = paths[0], paths[1]
-    audio = load_audio(wavPath)
-    audln = audio.shape[0]
-    ppgln = audln // 320
-    # audio = pad_or_trim(audio)
-    mel = log_mel_spectrogram(audio).to(whisper.device)
-    with torch.no_grad():
-        ppg = whisper.encoder(mel.unsqueeze(0)).squeeze().data.cpu().float().numpy()
-        ppg = ppg[:ppgln,] # [length, dim=1024]
-        print(ppg.shape)
-        np.save(ppgPath, ppg, allow_pickle=False)
+    try:
+        audio = load_audio(wavPath)
+        audln = audio.shape[0]
+        ppgln = audln // 320
+        # audio = pad_or_trim(audio)
+        mel = log_mel_spectrogram(audio).to(whisper.device)
+        with torch.no_grad():
+            ppg = whisper.encoder(mel.unsqueeze(0)).squeeze().data.cpu().float().numpy()
+            ppg = ppg[:ppgln,] # [length, dim=1024]
+            print(ppg.shape)
+            np.save(ppgPath, ppg, allow_pickle=False)
+    except:
+        print(paths)
+        exit()
 
 
 if __name__ == "__main__":
