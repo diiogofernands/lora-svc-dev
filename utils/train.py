@@ -11,6 +11,8 @@ from torch.nn.parallel import DistributedDataParallel
 import itertools
 import traceback
 
+import wandb
+
 from utils.dataloader import create_dataloader
 from utils.writer import MyWriter
 from utils.stft import TacotronSTFT
@@ -65,7 +67,8 @@ def train(rank, args, chkpt_path, hp, hp_str):
             ]
         )
         logger = logging.getLogger()
-        writer = MyWriter(hp, log_dir)
+#         writer = MyWriter(hp, log_dir)
+        writer = wandb.init(project="lora-svc",entity="ceia-moises")
         valloader = create_dataloader(hp, False)
 
     if chkpt_path is not None:
@@ -167,7 +170,14 @@ def train(rank, args, chkpt_path, hp, hp_str):
             loss_m = mel_loss.item()
 
             if rank == 0 and step % hp.log.info_interval == 0:
-                writer.log_training(loss_g, loss_d, loss_m, loss_s, score_loss.item(), step)
+                #writer.log_training(loss_g, loss_d, loss_m, loss_s, score_loss.item(), step)
+                #fix2wb
+                writer.log('train/g_loss', loss_g, step)
+                writer.log('train/d_loss', loss_d, step)
+                writer.log('train/score_loss', score_loss.item(), step)
+                writer.log('train/stft_loss', loss_s, step)
+                writer.log('train/mel_loss', loss_m, step)
+                
                 logger.info("g %.04f m %.04f s %.04f d %.04f | step %d" % (loss_g, loss_m, loss_s, loss_d, step))
 
             if rank == 0 and step % hp.log.eval_interval == 0:
