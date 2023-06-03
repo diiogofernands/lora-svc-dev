@@ -10,7 +10,7 @@ from torch.distributed import init_process_group
 from torch.nn.parallel import DistributedDataParallel
 import itertools
 import traceback
-import writer
+import wandb
 
 from utils.dataloader import create_dataloader
 from utils.writer import MyWriter
