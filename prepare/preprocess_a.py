@@ -48,7 +48,6 @@ if __name__ == "__main__":
                     path.append(f"{wavPath}/{spks}/{file}.wav")
                     path.append(f"{outPath}/{spks}/{file}.wav")
                     path.append(args.sr)
-                    paths.append(path)
                     #resample_wave(f"{wavPath}/{spks}/{file}.wav", f"{outPath}/{spks}/{file}.wav", args.sr)
         else:
             file = spks
@@ -58,8 +57,8 @@ if __name__ == "__main__":
                 path.append(f"{wavPath}/{file}.wav")
                 path.append(f"{outPath}/{file}.wav")
                 path.append(args.sr)
-                paths.append(path)
                 #resample_wave(f"{wavPath}/{file}.wav", f"{outPath}/{file}.wav", args.sr)
+        paths.append(path)
                 
     pool_obj = multiprocessing.Pool()
     ans = pool_obj.map(resample_wave, paths)
