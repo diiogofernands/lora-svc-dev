@@ -100,9 +100,8 @@ data tree like this
               ├── 000001.ppg.npy
               ├── 000002.ppg.npy
               └── 000003.ppg.npy
-![image](https://user-images.githubusercontent.com/16432329/230908037-127becb9-ed2a-41b5-8ac6-c9791ec2f7c7.png)
 
-## Infer
+<!-- ## Infer
 - 0 set work path
 
     > export PYTHONPATH=$PWD
@@ -123,7 +122,7 @@ data tree like this
 
     > python svc_inference.py --config config/maxgan.yaml --model maxgan_g.pth --spk ./config/singers/singer0001.npy --wave test.wav
 
-    The generated file is in the current directory svc_out.wav; at the same time, svc_out_pitch.wav is generated to visually display the pitch extraction results.
+    The generated file is in the current directory svc_out.wav; at the same time, svc_out_pitch.wav is generated to visually display the pitch extraction results. -->
 
 ## Reference
 [AdaSpeech: Adaptive Text to Speech for Custom Voice](https://arxiv.org/pdf/2103.00993.pdf)
@@ -138,7 +137,7 @@ https://github.com/NVIDIA/BigVGAN [[paper]](https://arxiv.org/abs/2206.04658)
 
 https://github.com/chenwj1989/pafx
 
-## Data-sets
+<!-- ## Data-sets
 
 KiSing        http://shijt.site/index.php/2021/05/16/kising-the-first-open-source-mandarin-singing-voice-synthesis-corpus/
 
@@ -166,7 +165,7 @@ DSD100        https://sigsep.github.io/datasets/dsd100.html
 
 Aishell-3     http://www.aishelltech.com/aishell_3
 
-VCTK          https://datashare.ed.ac.uk/handle/10283/2651
+VCTK          https://datashare.ed.ac.uk/handle/10283/2651 -->
 
 # Notice
 If you adopt the code or idea of this project, please list it in your project, which is the basic criterion for the continuation of the open source spirit.
