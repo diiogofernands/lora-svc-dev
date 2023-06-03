@@ -1,7 +1,6 @@
 import tqdm
 import torch
 import torch.nn.functional as F
-import wandb
 
 def validate(hp, args, generator, discriminator, valloader, stft, writer, step, device):
     generator.eval()
@@ -38,6 +37,6 @@ def validate(hp, args, generator, discriminator, valloader, stft, writer, step, 
 
     #writer.log_validation(mel_loss, generator, discriminator, step)
     #fix2wb
-    wandb.log('validation/mel_loss', mel_loss, step)
+    writer.log('validation/mel_loss', mel_loss, step)
 
     torch.backends.cudnn.benchmark = True
