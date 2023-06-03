@@ -55,8 +55,8 @@ if __name__ == "__main__":
             if file.endswith(".wav"):
                 file = file[:-4]
                 path = list()
-                path.append(f"{wavPath}/{spks}/{file}.wav")
-                path.append(f"{outPath}/{spks}/{file}.wav")
+                path.append(f"{wavPath}/{file}.wav")
+                path.append(f"{outPath}/{file}.wav")
                 path.append(args.sr)
                 paths.append(path)
                 #resample_wave(f"{wavPath}/{file}.wav", f"{outPath}/{file}.wav", args.sr)
