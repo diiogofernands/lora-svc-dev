@@ -33,16 +33,16 @@ def get_speaker(paths):
         waveform = speaker_encoder_ap.load_wav(
                 wav_file, sr=speaker_encoder_ap.sample_rate
             )
-            spec = speaker_encoder_ap.melspectrogram(waveform)
-            spec = torch.from_numpy(spec.T)
-            if args.use_cuda:
-                spec = spec.cuda()
-            spec = spec.unsqueeze(0)
-            embed = speaker_encoder.compute_embedding(spec).detach().cpu().numpy()
-            embed = embed.squeeze()
-            embed_path = wav_file.replace(dataset_path, output_path)
-            embed_path = embed_path.replace(".wav", ".spk")
-            np.save(embed_path, embed, allow_pickle=False)
+        spec = speaker_encoder_ap.melspectrogram(waveform)
+        spec = torch.from_numpy(spec.T)
+        if args.use_cuda:
+            spec = spec.cuda()
+        spec = spec.unsqueeze(0)
+        embed = speaker_encoder.compute_embedding(spec).detach().cpu().numpy()
+        embed = embed.squeeze()
+        embed_path = wav_file.replace(dataset_path, output_path)
+        embed_path = embed_path.replace(".wav", ".spk")
+        np.save(embed_path, embed, allow_pickle=False)
     except:
         print(paths)
         exit()
